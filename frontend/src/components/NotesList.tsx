@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Search, Plus, Trash2, FileText } from 'lucide-react';
+import { Search, Plus, Trash2, FileText, Save, Clock } from 'lucide-react';
 import { Note, SortOption } from '@/types/note';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -34,6 +34,8 @@ interface NotesListProps {
   onNoteSelect: (note: Note) => void;
   onNoteCreate: () => void;
   onNoteDelete: (id: string) => void;
+  savingNoteId?: string;
+  deletingNoteId?: string;
 }
 
 const NotesList: React.FC<NotesListProps> = ({
@@ -46,6 +48,8 @@ const NotesList: React.FC<NotesListProps> = ({
   onNoteSelect,
   onNoteCreate,
   onNoteDelete,
+  savingNoteId,
+  deletingNoteId,
 }) => {
   const stripHtml = (html: string): string => {
     const div = document.createElement('div');
@@ -113,23 +117,33 @@ const NotesList: React.FC<NotesListProps> = ({
             {notes.map((note) => (
               <Card
                 key={note.id}
-                className={`mb-2 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
+                className={`mb-2 cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 group ${
                   selectedNoteId === note.id ? 'ring-2 ring-blue-500' : ''
                 }`}
                 onClick={() => onNoteSelect(note)}
               >
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate mb-1">
-                        {note.title}
-                      </h3>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {savingNoteId === note.id ? (
+                        <Clock className="h-3 w-3 text-orange-500 animate-spin flex-shrink-0" />
+                      ) : (
+                        <Save className="h-3 w-3 text-green-500 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm truncate mb-1">
+                          {note.title}
+                        </h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
                         {getPreview(note.content) || 'No content'}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {formatDistanceToNow(note.updatedAt, { addSuffix: true })}
-                      </p>
+                                              <p className="text-xs text-gray-500">
+                          {note.updatedAt 
+                            ? formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })
+                            : 'Just created'
+                          }
+                        </p>
+                      </div>
                     </div>
                     
                     <AlertDialog>
@@ -137,10 +151,15 @@ const NotesList: React.FC<NotesListProps> = ({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 ml-2 opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600"
+                          className="h-6 w-6 p-0 ml-2 opacity-50 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 transition-opacity"
                           onClick={(e) => e.stopPropagation()}
+                          disabled={deletingNoteId === note.id}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          {deletingNoteId === note.id ? (
+                            <Clock className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>

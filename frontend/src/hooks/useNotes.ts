@@ -29,8 +29,9 @@ export const useNotes = () => {
   const createNote = useCallback(async (title: string, content: string): Promise<Note | null> => {
     try {
       const newNote = await api.createNote(title, content);
-      fetchNotes(); // Refetch to get the latest list
-      return newNote;
+      const normalized = newNote ? { ...newNote, id: (newNote as any)?.id ?? (newNote as any)?._id } : null;
+      await fetchNotes(); // Refetch to get the latest list
+      return normalized as Note | null;
     } catch (err) {
       setError('Failed to create note');
       return null;
@@ -40,20 +41,22 @@ export const useNotes = () => {
   const updateNote = useCallback(async (id: string, title: string, content: string) => {
     try {
       await api.updateNote(id, title, content);
-      fetchNotes(); // Refetch to update the list
+      await fetchNotes(); // Refetch to update the list
       setError(null);
     } catch (err) {
       setError('Failed to update note');
+      throw err; // Re-throw to allow caller to handle
     }
   }, [fetchNotes]);
 
   const deleteNote = useCallback(async (id: string) => {
     try {
       await api.deleteNote(id);
-      fetchNotes(); // Refetch to update the list
+      await fetchNotes(); // Refetch to update the list
       setError(null);
     } catch (err) {
       setError('Failed to delete note');
+      throw err; // Re-throw to allow caller to handle
     }
   }, [fetchNotes]);
 

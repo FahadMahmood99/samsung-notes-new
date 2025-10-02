@@ -20,6 +20,8 @@ const Index = () => {
 
   const [selectedNote, setSelectedNote] = useState<Note | undefined>();
   const [showAutoSaveToast, setShowAutoSaveToast] = useState(false);
+  const [savingNoteId, setSavingNoteId] = useState<string | undefined>();
+  const [deletingNoteId, setDeletingNoteId] = useState<string | undefined>();
   const { toast } = useToast();
 
   const handleNoteSelect = useCallback((note: Note) => {
@@ -53,22 +55,40 @@ const Index = () => {
     }
   }, [createNote, selectedNote, toast]);
 
-  const handleNoteSave = useCallback((title: string, content: string) => {
+  const handleNoteSave = useCallback(async (title: string, content: string) => {
     if (selectedNote) {
-      updateNote(selectedNote.id, title, content);
+      const noteId = selectedNote.id ?? (selectedNote as any)?._id;
+      if (!noteId) return; // Guard against undefined IDs
+      setSavingNoteId(noteId);
+      try {
+        await updateNote(noteId, title, content);
+      } finally {
+        setSavingNoteId(undefined);
+      }
     }
   }, [selectedNote, updateNote]);
 
-  const handleNoteDelete = useCallback((id: string) => {
-    deleteNote(id);
-    if (selectedNote && selectedNote.id === id) {
-      setSelectedNote(undefined);
+  const handleNoteDelete = useCallback(async (id: string) => {
+    setDeletingNoteId(id);
+    try {
+      await deleteNote(id);
+      if (selectedNote && selectedNote.id === id) {
+        setSelectedNote(undefined);
+      }
+      toast({
+        title: "Note deleted",
+        description: "The note has been deleted successfully.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Delete failed",
+        description: "Failed to delete the note. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingNoteId(undefined);
     }
-    toast({
-      title: "Note deleted",
-      description: "The note has been deleted successfully.",
-      variant: "destructive",
-    });
   }, [deleteNote, selectedNote, toast]);
 
   const handleTitleChange = useCallback((title: string) => {
@@ -89,6 +109,8 @@ const Index = () => {
         onNoteSelect={handleNoteSelect}
         onNoteCreate={handleNoteCreate}
         onNoteDelete={handleNoteDelete}
+        savingNoteId={savingNoteId}
+        deletingNoteId={deletingNoteId}
       />
 
       {/* Main editor area */}

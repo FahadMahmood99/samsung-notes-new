@@ -2,7 +2,9 @@ const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 // Helper function to get auth token
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  console.log('Auth token:', token ? 'Present' : 'Missing'); // Debug log
+  return token;
 };
 
 // Helper function to make authenticated requests
@@ -69,31 +71,33 @@ const api = {
     if (searchQuery) params.append('search_query', searchQuery);
     if (sortBy) params.append('sort_by', sortBy);
 
-    return makeAuthenticatedRequest(`${API_BASE_URL}/notes?${params}`);
+    console.log('Fetching notes with params:', params.toString()); // Debug log
+    const data = await makeAuthenticatedRequest(`${API_BASE_URL}/notes/?${params}`);
+    return Array.isArray(data) ? data.map((n: any) => ({ ...n, id: n?.id ?? n?._id })) : [];
   },
 
   createNote: async (title: string, content: string) => {
-    return makeAuthenticatedRequest(`${API_BASE_URL}/notes`, {
+    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/`, {
       method: 'POST',
       body: JSON.stringify({ title, content }),
     });
   },
 
   updateNote: async (id: string, title: string, content: string) => {
-    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}`, {
+    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}/`, {
       method: 'PUT',
       body: JSON.stringify({ title, content }),
     });
   },
 
   deleteNote: async (id: string) => {
-    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}`, {
+    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}/`, {
       method: 'DELETE',
     });
   },
 
   getNote: async (id: string) => {
-    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}`);
+    return makeAuthenticatedRequest(`${API_BASE_URL}/notes/${id}/`);
   },
 };
 

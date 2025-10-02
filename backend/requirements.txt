@@ -7,3 +7,4 @@ passlib[bcrypt]
 argon2-cffi
 python-jose[cryptography]
 pydantic-settings
+dnspython>=2.3,<3

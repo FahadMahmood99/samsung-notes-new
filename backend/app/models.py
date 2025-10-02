@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
+from datetime import datetime
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -11,9 +12,10 @@ class UserInDB(UserBase):
     id: str = Field(..., alias="_id")
     hashed_password: str
 
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+    }
 
 class UserPublic(UserBase):
     id: str
@@ -39,7 +41,10 @@ class NoteUpdate(BaseModel):
 class NoteInDB(NoteBase):
     id: str = Field(..., alias="_id")
     owner_id: str
+    createdAt: Optional[datetime] = None
+    updatedAt: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+    model_config = {
+        "from_attributes": True,
+        "populate_by_name": True,
+    }

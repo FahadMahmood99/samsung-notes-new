@@ -26,4 +26,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_d
     user = await db.users.find_one({"email": token_data.email})
     if user is None:
         raise credentials_exception
+    # Convert ObjectId to string; keep both keys so alias works
+    user["_id"] = str(user["_id"])  # ensure string
+    user["id"] = user["_id"]
     return models.UserInDB(**user)

@@ -19,7 +19,9 @@ class Settings(BaseSettings):
             # Fallback to common development origins
             return [
                 "http://localhost:5137",
-                "http://127.0.0.1:5137", 
+                "http://127.0.0.1:5137",
+                "http://localhost:5138", 
+                "http://127.0.0.1:5138",
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
                 "http://localhost:3000",
